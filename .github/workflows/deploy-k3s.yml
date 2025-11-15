@@ -139,10 +139,10 @@ jobs:
             ingressClassName: traefik
             tls:
             - hosts:
-              - ${{ secrets.APP_DOMAIN }}
+              - gamesmanager.rabbitvps.com
               secretName: gamesmanager-tls
             rules:
-            - host: ${{ secrets.APP_DOMAIN }}
+            - host: gamesmanager.rabbitvps.com
               http:
                 paths:
                 - path: /
