@@ -25,7 +25,7 @@ public class MinecraftServerEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String name;
     
     @Column(nullable = false)
@@ -34,10 +34,10 @@ public class MinecraftServerEntity {
     @Column(nullable = false, unique = true)
     private Integer nodePort;
     
-    @Column(nullable = false, columnDefinition = "CLOB")
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String k8sConfig;
     
-    @Column(nullable = false, columnDefinition = "CLOB")
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String minecraftConfig;
     
     @Column(nullable = false)
