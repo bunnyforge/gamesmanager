@@ -55,15 +55,6 @@ jobs:
           metadata:
             name: gamesmanager
           ---
-          apiVersion: v1
-          kind: Secret
-          metadata:
-            name: gamesmanager-secrets
-            namespace: gamesmanager
-          type: Opaque
-          stringData:
-            k8s-kubeconfig: "${{ secrets.K8S_KUBECONFIG_BASE64 }}"
-          ---
           apiVersion: apps/v1
           kind: Deployment
           metadata:
@@ -88,11 +79,6 @@ jobs:
                   env:
                   - name: SPRING_PROFILES_ACTIVE
                     value: prod
-                  - name: K8S_KUBECONFIG_BASE64
-                    valueFrom:
-                      secretKeyRef:
-                        name: gamesmanager-secrets
-                        key: k8s-kubeconfig
                   resources:
                     requests:
                       memory: "512Mi"
