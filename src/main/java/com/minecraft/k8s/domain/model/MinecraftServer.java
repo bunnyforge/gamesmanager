@@ -23,6 +23,9 @@ public class MinecraftServer {
     @Schema(description = "集群 ID", example = "1")
     private Long clusterId;
 
+    @Schema(description = "集群名称", example = "production-cluster")
+    private String clusterName;
+
     @Schema(description = "服务器状态", example = "RUNNING")
     private String status;
 

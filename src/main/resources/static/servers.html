@@ -204,6 +204,7 @@
                     <div class="card-content">
                         <div class="card-title">${server.name}</div>
                         <div class="card-subtitle">
+                            <span>🌐 ${server.clusterName || 'Unknown Cluster'}</span>
                             <span>${server.minecraftConfig.serverType} ${server.minecraftConfig.version}</span>
                             <span>Port: ${server.nodePort}</span>
                         </div>
@@ -285,7 +286,8 @@
             const term = e.target.value.toLowerCase();
             const filtered = allServers.filter(s =>
                 s.name.toLowerCase().includes(term) ||
-                s.minecraftConfig.serverType.toLowerCase().includes(term)
+                s.minecraftConfig.serverType.toLowerCase().includes(term) ||
+                (s.clusterName && s.clusterName.toLowerCase().includes(term))
             );
             renderGrid(filtered);
         });

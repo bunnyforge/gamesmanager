@@ -2,13 +2,18 @@ package com.minecraft.k8s.mapper;
 
 import com.minecraft.k8s.domain.entity.MinecraftServerEntity;
 import com.minecraft.k8s.domain.model.MinecraftServer;
+import com.minecraft.k8s.repository.ClusterRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /**
  * 手动实现的 Mapper（因为涉及 JSON 转换）
  */
 @Component
+@RequiredArgsConstructor
 public class MinecraftServerMapper {
+
+    private final ClusterRepository clusterRepository;
 
     public MinecraftServer entityToModel(MinecraftServerEntity entity) {
         if (entity == null) {
@@ -23,6 +28,12 @@ public class MinecraftServerMapper {
         server.setStatus(entity.getStatus());
         server.setK8sConfig(entity.getK8sConfigObject());
         server.setMinecraftConfig(entity.getMinecraftConfigObject());
+
+        // 填充集群名称
+        if (entity.getClusterId() != null) {
+            clusterRepository.findById(entity.getClusterId())
+                    .ifPresent(cluster -> server.setClusterName(cluster.getName()));
+        }
 
         return server;
     }
