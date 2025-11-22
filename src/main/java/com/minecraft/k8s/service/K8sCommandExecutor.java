@@ -189,6 +189,28 @@ public class K8sCommandExecutor {
             }
         }
 
+        // 删除 PVC (StatefulSet 的 volumeClaimTemplates 创建的 PVC)
+        // PVC 命名规则: data-${statefulset-name}-${pod-index}
+        String pvcName = "data-" + name + "-0";
+        try {
+            coreApi.deleteNamespacedPersistentVolumeClaim(pvcName, namespace).execute();
+            log.info("PVC deleted: {}/{}", namespace, pvcName);
+        } catch (ApiException e) {
+            if (e.getCode() != 404) {
+                log.warn("Failed to delete PVC: {}", e.getMessage());
+            }
+        }
+
+        // 删除 Namespace
+        try {
+            coreApi.deleteNamespace(namespace).execute();
+            log.info("Namespace deleted: {}", namespace);
+        } catch (ApiException e) {
+            if (e.getCode() != 404) {
+                log.warn("Failed to delete Namespace: {}", e.getMessage());
+            }
+        }
+
         log.info("Resources deleted: {}/{}", namespace, name);
     }
 
