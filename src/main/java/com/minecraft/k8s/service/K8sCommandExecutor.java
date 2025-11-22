@@ -23,21 +23,19 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 public class K8sCommandExecutor {
-    
-    private final ApiClient apiClient;
-    
-    public void applyYaml(String yaml) {
+
+    public void applyYaml(ApiClient apiClient, String yaml) {
         try {
             // 解析 YAML 中的多个资源
             List<Object> resources = Yaml.loadAll(yaml);
-            
+
             CoreV1Api coreApi = new CoreV1Api(apiClient);
             AppsV1Api appsApi = new AppsV1Api(apiClient);
-            
+
             for (Object resource : resources) {
                 applyResource(resource, coreApi, appsApi);
             }
-            
+
             log.info("YAML applied successfully");
         } catch (IOException e) {
             throw new RuntimeException("Failed to parse YAML", e);
@@ -45,10 +43,10 @@ public class K8sCommandExecutor {
             throw new RuntimeException("Failed to apply YAML: " + e.getResponseBody(), e);
         }
     }
-    
+
     private void applyResource(Object resource, CoreV1Api coreApi, AppsV1Api appsApi) throws ApiException {
         String kind = getKind(resource);
-        
+
         switch (kind) {
             case "Namespace":
                 applyNamespace(resource, coreApi);
@@ -66,12 +64,12 @@ public class K8sCommandExecutor {
                 log.warn("Unsupported resource kind: {}", kind);
         }
     }
-    
+
     private void applyNamespace(Object resource, CoreV1Api api) throws ApiException {
         V1Namespace namespace = (V1Namespace) resource;
-        
+
         String name = namespace.getMetadata().getName();
-        
+
         try {
             // 尝试获取，如果存在则更新
             api.readNamespace(name).execute();
@@ -87,13 +85,13 @@ public class K8sCommandExecutor {
             }
         }
     }
-    
+
     private void applyService(Object resource, CoreV1Api api) throws ApiException {
         V1Service service = (V1Service) resource;
-        
+
         String namespace = service.getMetadata().getNamespace();
         String name = service.getMetadata().getName();
-        
+
         try {
             api.readNamespacedService(name, namespace).execute();
             api.replaceNamespacedService(name, namespace, service).execute();
@@ -107,33 +105,52 @@ public class K8sCommandExecutor {
             }
         }
     }
-    
+
     private void applyStatefulSet(Object resource, AppsV1Api api) throws ApiException {
-        V1StatefulSet statefulSet = (V1StatefulSet) resource;
-        
-        String namespace = statefulSet.getMetadata().getNamespace();
-        String name = statefulSet.getMetadata().getName();
-        
+        V1StatefulSet newStatefulSet = (V1StatefulSet) resource;
+
+        String namespace = newStatefulSet.getMetadata().getNamespace();
+        String name = newStatefulSet.getMetadata().getName();
+
         try {
-            api.readNamespacedStatefulSet(name, namespace).execute();
-            api.replaceNamespacedStatefulSet(name, namespace, statefulSet).execute();
+            V1StatefulSet existingStatefulSet = api.readNamespacedStatefulSet(name, namespace).execute();
+
+            // Smart update: only update mutable fields
+            if (existingStatefulSet.getSpec() != null && newStatefulSet.getSpec() != null) {
+                existingStatefulSet.getSpec()
+                        .replicas(newStatefulSet.getSpec().getReplicas())
+                        .template(newStatefulSet.getSpec().getTemplate())
+                        .updateStrategy(newStatefulSet.getSpec().getUpdateStrategy())
+                        .minReadySeconds(newStatefulSet.getSpec().getMinReadySeconds())
+                        .revisionHistoryLimit(newStatefulSet.getSpec().getRevisionHistoryLimit());
+            }
+
+            // Update metadata
+            if (newStatefulSet.getMetadata().getAnnotations() != null) {
+                existingStatefulSet.getMetadata().setAnnotations(newStatefulSet.getMetadata().getAnnotations());
+            }
+            if (newStatefulSet.getMetadata().getLabels() != null) {
+                existingStatefulSet.getMetadata().setLabels(newStatefulSet.getMetadata().getLabels());
+            }
+
+            api.replaceNamespacedStatefulSet(name, namespace, existingStatefulSet).execute();
             log.info("StatefulSet updated: {}/{}", namespace, name);
         } catch (ApiException e) {
             if (e.getCode() == 404) {
-                api.createNamespacedStatefulSet(namespace, statefulSet).execute();
+                api.createNamespacedStatefulSet(namespace, newStatefulSet).execute();
                 log.info("StatefulSet created: {}/{}", namespace, name);
             } else {
                 throw e;
             }
         }
     }
-    
+
     private void applyPvc(Object resource, CoreV1Api api) throws ApiException {
         V1PersistentVolumeClaim pvc = (V1PersistentVolumeClaim) resource;
-        
+
         String namespace = pvc.getMetadata().getNamespace();
         String name = pvc.getMetadata().getName();
-        
+
         try {
             api.readNamespacedPersistentVolumeClaim(name, namespace).execute();
             // PVC 不支持更新，跳过
@@ -147,8 +164,8 @@ public class K8sCommandExecutor {
             }
         }
     }
-    
-    public void deleteResources(String namespace, String name) {
+
+    public void deleteResources(ApiClient apiClient, String namespace, String name) {
         CoreV1Api coreApi = new CoreV1Api(apiClient);
         AppsV1Api appsApi = new AppsV1Api(apiClient);
 
@@ -174,7 +191,7 @@ public class K8sCommandExecutor {
 
         log.info("Resources deleted: {}/{}", namespace, name);
     }
-    
+
     private String getKind(Object resource) {
         try {
             return (String) resource.getClass().getMethod("getKind").invoke(resource);

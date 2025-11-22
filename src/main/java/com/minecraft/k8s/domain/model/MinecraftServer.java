@@ -13,19 +13,25 @@ import lombok.Data;
 public class MinecraftServer {
     @Schema(description = "命名空间", example = "minecraft31003")
     private String namespace;
-    
+
     @Schema(description = "服务器名称", example = "my-minecraft-server")
     private String name;
-    
+
     @Schema(description = "NodePort 端口", example = "31003")
     private int nodePort;
-    
+
+    @Schema(description = "集群 ID", example = "1")
+    private Long clusterId;
+
+    @Schema(description = "服务器状态", example = "RUNNING")
+    private String status;
+
     @Schema(description = "Kubernetes 资源配置")
     private K8sConfig k8sConfig;
-    
+
     @Schema(description = "Minecraft 服务器配置")
     private MinecraftConfig minecraftConfig;
-    
+
     // 业务方法
     public void validate() {
         if (namespace == null || namespace.isBlank()) {
@@ -47,7 +53,7 @@ public class MinecraftServer {
             throw new IllegalArgumentException("Max players must be between 1 and 10000");
         }
     }
-    
+
     public String getFullName() {
         return namespace + "/" + name;
     }

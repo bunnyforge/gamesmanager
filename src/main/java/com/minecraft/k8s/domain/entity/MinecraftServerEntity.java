@@ -18,39 +18,42 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "minecraft_server")
 public class MinecraftServerEntity {
-    
+
     private static final ObjectMapper objectMapper = new ObjectMapper();
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
+    @Column(name = "cluster_id")
+    private Long clusterId;
+
     @Column(nullable = false)
     private String name;
-    
+
     @Column(nullable = false)
     private String namespace;
-    
+
     @Column(nullable = false, unique = true)
     private Integer nodePort;
-    
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String k8sConfig;
-    
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String minecraftConfig;
-    
+
     @Column(nullable = false)
     private String status = "CREATING";
-    
+
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
-    
+
     @UpdateTimestamp
     @Column(nullable = false)
     private LocalDateTime updatedAt;
-    
+
     // JSON 转换辅助方法
     public K8sConfig getK8sConfigObject() {
         try {
@@ -59,7 +62,7 @@ public class MinecraftServerEntity {
             throw new RuntimeException("Failed to parse k8sConfig", e);
         }
     }
-    
+
     public void setK8sConfigObject(K8sConfig config) {
         try {
             this.k8sConfig = objectMapper.writeValueAsString(config);
@@ -67,7 +70,7 @@ public class MinecraftServerEntity {
             throw new RuntimeException("Failed to serialize k8sConfig", e);
         }
     }
-    
+
     public MinecraftConfig getMinecraftConfigObject() {
         try {
             return objectMapper.readValue(minecraftConfig, MinecraftConfig.class);
@@ -75,7 +78,7 @@ public class MinecraftServerEntity {
             throw new RuntimeException("Failed to parse minecraftConfig", e);
         }
     }
-    
+
     public void setMinecraftConfigObject(MinecraftConfig config) {
         try {
             this.minecraftConfig = objectMapper.writeValueAsString(config);
