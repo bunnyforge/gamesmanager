@@ -324,6 +324,12 @@ public class MinecraftServerService {
         result = result.replace("${modrinthModpack}", 
                 resource.getModrinthModpack() != null ? resource.getModrinthModpack() : "");
         
+        // 世界边界配置（用于 Chunky 预生成和 ChunkyBorder）
+        result = result.replace("${worldBorderSize}", 
+                resource.getWorldBorderSize() != null ? String.valueOf(resource.getWorldBorderSize()) : "0");
+        result = result.replace("${rconStartupCommands}", 
+                resource.getRconStartupCommands() != null ? resource.getRconStartupCommands() : "");
+        
         return result;
     }
 
@@ -405,6 +411,10 @@ public class MinecraftServerService {
             if (dto.getModrinthModpack() != null && !dto.getModrinthModpack().isEmpty()) {
                 config.setServerType("MODRINTH");
             }
+            
+            // 世界边界和预生成配置
+            config.setWorldBorderSize(dto.getWorldBorderSize());
+            config.setPregenRadius(dto.getPregenRadius());
         } else {
             // 如果没有传 minecraftConfig，使用默认值
             config.setServerType(defaultConfig.serverType());
@@ -474,6 +484,14 @@ public class MinecraftServerService {
             if (!dto.getModrinthModpack().isEmpty()) {
                 config.setServerType("MODRINTH");
             }
+        }
+        
+        // 世界边界和预生成配置
+        if (dto.getWorldBorderSize() != null) {
+            config.setWorldBorderSize(dto.getWorldBorderSize());
+        }
+        if (dto.getPregenRadius() != null) {
+            config.setPregenRadius(dto.getPregenRadius());
         }
 
         // 如果内存限制变了，重新计算 JVM 内存

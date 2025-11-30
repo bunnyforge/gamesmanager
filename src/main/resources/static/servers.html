@@ -449,7 +449,109 @@
                         </div>
                     </div>
 
+                    <div class="form-group">
+                        <label>
+                            World Settings <span style="color: #888; font-weight: normal;">(Optional, requires Chunky + ChunkyBorder)</span>
+                        </label>
+                        <div class="world-border-container">
+                            <div class="world-border-header">
+                                <span class="world-border-icon">🌍</span>
+                                <span class="world-border-hint">Pre-generate chunks for smooth gameplay</span>
+                            </div>
+                            <div class="world-settings-grid">
+                                <div class="world-setting-item">
+                                    <label for="pregenRadius">Pre-generate Radius</label>
+                                    <input type="number" id="pregenRadius" name="pregenRadius" 
+                                        min="100" max="30000" step="100"
+                                        placeholder="e.g. 2000">
+                                    <span class="setting-hint">Chunks to generate at startup</span>
+                                </div>
+                                <div class="world-setting-item">
+                                    <label for="worldBorderSize">World Border</label>
+                                    <input type="number" id="worldBorderSize" name="worldBorderSize" 
+                                        min="100" max="30000" step="100"
+                                        placeholder="e.g. 5000">
+                                    <span class="setting-hint">Max exploration range</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <style>
+                        .world-border-container {
+                            background: #1e1e2e;
+                            border: 1px solid #3a3a4a;
+                            border-radius: 8px;
+                            overflow: hidden;
+                        }
+
+                        .world-border-header {
+                            display: flex;
+                            align-items: center;
+                            gap: 0.5rem;
+                            padding: 0.75rem 1rem;
+                            background: #252535;
+                            border-bottom: 1px solid #3a3a4a;
+                        }
+
+                        .world-border-icon {
+                            font-size: 1.1rem;
+                        }
+
+                        .world-border-hint {
+                            font-size: 0.8rem;
+                            color: #888;
+                        }
+
+                        .world-border-container input {
+                            width: 100%;
+                            border: none !important;
+                            background: transparent !important;
+                            padding: 1rem !important;
+                            font-size: 0.95rem;
+                            color: #a5d6ff;
+                        }
+
+                        .world-border-container input::placeholder {
+                            color: #555;
+                        }
+
+                        .world-border-container input:focus {
+                            outline: none;
+                            box-shadow: none !important;
+                        }
+
+                        .world-settings-grid {
+                            display: grid;
+                            grid-template-columns: 1fr 1fr;
+                            gap: 1rem;
+                            padding: 1rem;
+                        }
+
+                        .world-setting-item {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 0.25rem;
+                        }
+
+                        .world-setting-item label {
+                            font-size: 0.85rem;
+                            color: #ccc;
+                            margin-bottom: 0;
+                        }
+
+                        .world-setting-item input {
+                            padding: 0.5rem !important;
+                            background: #252535 !important;
+                            border: 1px solid #3a3a4a !important;
+                            border-radius: 4px;
+                        }
+
+                        .setting-hint {
+                            font-size: 0.75rem;
+                            color: #666;
+                        }
+
                         .mods-input-container {
                             background: #1e1e2e;
                             border: 1px solid #3a3a4a;
@@ -839,13 +941,17 @@
 
             const modrinthProjects = formData.get('modrinthProjects');
             const modrinthModpack = formData.get('modrinthModpack');
+            const worldBorderSize = formData.get('worldBorderSize');
+            const pregenRadius = formData.get('pregenRadius');
             const data = {
                 minecraftConfig: {
                     version: formData.get('version'),
                     serverType: modrinthModpack ? 'MODRINTH' : formData.get('serverType'),
                     maxPlayers: parseInt(formData.get('maxPlayers')),
                     modrinthProjects: modrinthProjects || null,
-                    modrinthModpack: modrinthModpack || null
+                    modrinthModpack: modrinthModpack || null,
+                    worldBorderSize: worldBorderSize ? parseInt(worldBorderSize) : null,
+                    pregenRadius: pregenRadius ? parseInt(pregenRadius) : null
                 },
                 k8sConfig: {
                     memoryLimit: parseInt(formData.get('memoryLimit')),

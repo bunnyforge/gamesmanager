@@ -32,6 +32,15 @@ public class K8sResource {
     // Modrinth 整合包配置（整合包模式）
     private String modrinthModpack;
     
+    // 世界边界大小
+    private Integer worldBorderSize;
+    
+    // 预生成半径
+    private Integer pregenRadius;
+    
+    // RCON 启动命令
+    private String rconStartupCommands;
+    
     public static K8sResource fromMinecraftServer(MinecraftServer server) {
         K8sResource resource = new K8sResource();
         resource.setNamespace(server.getNamespace());
@@ -61,8 +70,40 @@ public class K8sResource {
         resource.setModrinthProjects(mcConfig.getModrinthProjects());
         resource.setModrinthModpack(mcConfig.getModrinthModpack());
         
+        // 世界边界和预生成配置
+        resource.setWorldBorderSize(mcConfig.getWorldBorderSize());
+        resource.setPregenRadius(mcConfig.getPregenRadius());
+        resource.setRconStartupCommands(buildRconStartupCommands(mcConfig));
+        
         return resource;
     }
     
-
+    /**
+     * 构建 RCON 启动命令
+     * 如果配置了世界边界，自动生成 Chunky 预生成和 ChunkyBorder 命令
+     */
+    private static String buildRconStartupCommands(MinecraftConfig mcConfig) {
+        StringBuilder commands = new StringBuilder();
+        
+        Integer pregenRadius = mcConfig.getPregenRadius();
+        Integer borderSize = mcConfig.getWorldBorderSize();
+        
+        // 预生成命令（Chunky）
+        if (pregenRadius != null && pregenRadius > 0) {
+            commands.append(String.format(
+                "chunky world world,chunky center 0 0,chunky radius %d,chunky start",
+                pregenRadius
+            ));
+        }
+        
+        // 世界边界命令（ChunkyBorder）
+        if (borderSize != null && borderSize > 0) {
+            if (commands.length() > 0) {
+                commands.append(",");
+            }
+            commands.append(String.format("chunkyborder set circle %d", borderSize));
+        }
+        
+        return commands.toString();
+    }
 }

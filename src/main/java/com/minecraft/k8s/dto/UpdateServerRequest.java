@@ -64,5 +64,17 @@ public class UpdateServerRequest {
         // Modrinth 整合包配置（整合包模式，如果设置，TYPE 将自动变为 MODRINTH）
         @Schema(description = "Modrinth 整合包 URL", example = "https://modrinth.com/modpack/cobblemon-fabric/version/1.6.1.4")
         private String modrinthModpack;
+        
+        // 世界边界大小（ChunkyBorder）
+        @Min(100)
+        @Max(30000)
+        @Schema(description = "世界边界半径（格）", example = "5000")
+        private Integer worldBorderSize;
+        
+        // 预生成半径（Chunky）
+        @Min(100)
+        @Max(30000)
+        @Schema(description = "预生成区块半径（格），建议小于等于世界边界", example = "2000")
+        private Integer pregenRadius;
     }
 }
